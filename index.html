@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Our constellation</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=Nunito+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e9ebff;--ink:#1b1f4b;--soft:#4f5594;--star:#b8860b;--panel:#fff;--line:#b9bdf0;--btn:#2a2f7a;--btntext:#fff;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c0f2e;--ink:#f1f1ff;--soft:#a9aee6;--star:#ffd36b;--panel:#161a47;--line:#3a4090;--btn:#ffd36b;--btntext:#0c0f2e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0c0f2e;--ink:#f1f1ff;--soft:#a9aee6;--star:#ffd36b;--panel:#161a47;--line:#3a4090;--btn:#ffd36b;--btntext:#0c0f2e;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nunito Sans",system-ui,sans-serif;font-size:1.05rem;line-height:1.65}
+main{max-width:680px;margin:0 auto;padding:0 1.25rem 4rem}
+h1,h2{font-family:Fraunces,Georgia,serif;font-weight:600;line-height:1.1;margin:0}
+h1{font-size:clamp(2.4rem,10vw,4rem);padding-top:3.5rem}
+h1 em{font-weight:400}
+h2{font-size:1.6rem;margin-bottom:.5rem}
+.sub{color:var(--soft);margin:0 0 1.4rem}
+section{padding-top:3.2rem}
+
+.sky{position:relative;height:340px;background:var(--panel);border:1px solid var(--line);border-radius:26px;overflow:hidden}
+.sky svg{position:absolute;inset:0;width:100%;height:100%}
+.sky line{stroke:var(--line);stroke-width:1.5;stroke-dasharray:4 5}
+.star{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;border:0;background:none;cursor:pointer;color:var(--star);font-size:2rem;line-height:44px;padding:0;transition:transform .2s}
+.star:hover,.star[aria-pressed="true"]{transform:scale(1.35)}
+.star.lit{animation:twinkle 2.4s ease-in-out infinite}
+@keyframes twinkle{50%{opacity:.45}}
+:focus-visible{outline:3px solid var(--star);outline-offset:2px;border-radius:12px}
+.memory{margin-top:1rem;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:1.3rem 1.4rem;min-height:8rem}
+.memory h3{font-family:Fraunces,Georgia,serif;font-style:italic;font-weight:400;font-size:1.25rem;margin:0 0 .4rem;color:var(--star)}
+.memory p{margin:0}
+.hint{font-size:.9rem;color:var(--soft);margin-top:.6rem}
+
+.ask{text-align:center;background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:2.4rem 1.2rem;position:relative;min-height:230px}
+.ask h2{font-size:1.9rem}
+.row{display:flex;justify-content:center;gap:1rem;margin-top:1.4rem;position:relative;height:56px}
+.btn{font:inherit;font-weight:600;border:0;border-radius:999px;padding:.8rem 1.8rem;cursor:pointer;background:var(--btn);color:var(--btntext)}
+.btn.no{background:transparent;color:var(--soft);border:1px solid var(--line);position:relative;transition:transform .18s}
+#answer{margin-top:1rem;font-family:Fraunces,Georgia,serif;font-size:1.25rem}
+footer{text-align:center;color:var(--soft);margin-top:3rem;font-size:.95rem}
+@media (prefers-reduced-motion:reduce){.star.lit{animation:none}*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Every star here is <em id="who">you</em> and me.</h1>
+  <p class="sub" style="margin-top:1rem">A little sky I drew of the moments that matter to me.</p>
+
+  <section style="padding-top:2rem">
+    <div class="sky" id="sky">
+      <svg id="lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </div>
+    <div class="memory" id="memory" aria-live="polite">
+      <h3>Pick a star</h3>
+      <p>Each one holds a memory. Tap to open it.</p>
+    </div>
+    <p class="hint" id="hint">0 of 6 stars found</p>
+  </section>
+
+  <section>
+    <div class="ask">
+      <h2>One more thing…</h2>
+      <p class="sub" id="q">Will you go on a date with me this weekend?</p>
+      <div class="row">
+        <button class="btn" id="yes">Yes</button>
+        <button class="btn no" id="no">No</button>
+      </div>
+      <div id="answer" role="status"></div>
+    </div>
+  </section>
+
+  <footer>Made for you, with love. — <span id="me">Me</span></footer>
+</main>
+
+<script>
+/* ✏️ EDIT THESE ✏️ */
+const CONFIG = {
+  boyfriendName: "you",
+  myName: "Me",
+  question: "Will you go on a date with me this weekend?",
+  yesMessage: "Best answer ever. I’ll plan everything. ♥",
+  memories: [
+    {x:14,y:68,t:"The day we met",   p:"I didn’t know it yet, but my life was about to get so much better."},
+    {x:30,y:30,t:"Our first date",   p:"I was nervous and you made it easy. I knew I wanted more of that."},
+    {x:50,y:62,t:"The first time you made me laugh until I cried", p:"I still think about it and smile."},
+    {x:66,y:22,t:"A day I’ll never forget", p:"Nothing special happened, and that’s why it was perfect. Just us."},
+    {x:82,y:56,t:"When I knew",      p:"Somewhere between your smile and your stupid jokes, I fell for you."},
+    {x:90,y:18,t:"Still to come",    p:"All the trips, mornings and late-night talks we haven’t had yet. I can’t wait."}
+  ]
+};
+document.getElementById("who").textContent = CONFIG.boyfriendName;
+document.getElementById("me").textContent = CONFIG.myName;
+document.getElementById("q").textContent = CONFIG.question;
+
+const sky = document.getElementById("sky"), lines = document.getElementById("lines");
+const found = new Set();
+CONFIG.memories.forEach((m,i)=>{
+  if(i){const a=CONFIG.memories[i-1];lines.insertAdjacentHTML("beforeend",`<line x1="${a.x}" y1="${a.y}" x2="${m.x}" y2="${m.y}"/>`)}
+  const b = document.createElement("button");
+  b.className = "star lit"; b.textContent = "★"; b.style.left = m.x+"%"; b.style.top = m.y+"%";
+  b.setAttribute("aria-label","Memory: "+m.t); b.setAttribute("aria-pressed","false");
+  b.addEventListener("click",()=>{
+    sky.querySelectorAll(".star").forEach(s=>s.setAttribute("aria-pressed","false"));
+    b.setAttribute("aria-pressed","true");
+    document.getElementById("memory").innerHTML = "<h3></h3><p></p>";
+    document.querySelector("#memory h3").textContent = m.t;
+    document.querySelector("#memory p").textContent = m.p;
+    found.add(i);
+    document.getElementById("hint").textContent = found.size+" of "+CONFIG.memories.length+" stars found"+(found.size===CONFIG.memories.length?". You found them all. ♥":"");
+  });
+  sky.appendChild(b);
+});
+
+// Date question: the "No" button slips away
+const no = document.getElementById("no");
+function dodge(e){
+  if(e) e.preventDefault();
+  const x = (Math.random()-.5)*180, y = (Math.random()-.5)*90;
+  no.style.transform = `translate(${x}px,${y}px)`;
+}
+no.addEventListener("mouseenter",dodge);
+no.addEventListener("touchstart",dodge,{passive:false});
+no.addEventListener("click",dodge);
+document.getElementById("yes").addEventListener("click",()=>{
+  document.getElementById("answer").textContent = CONFIG.yesMessage;
+  no.style.display = "none";
+});
+</script>
+</body>
+</html>
